@@ -1,0 +1,6 @@
+{
+  "name": "Parth Academy",
+  "description": "Mobile-friendly learning platform for Parth Academy featuring study materials, chapter notes, interactive tests, weekly exam schedules, and performance results.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
