@@ -1,0 +1,168 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ParthAcademyFirebaseBlueprint",
+  "description": "Firestore schema blueprint for Parth Academy Coaching Management Platform",
+  "entities": {
+    "students": {
+      "title": "Students",
+      "description": "Enrolled student profiles and portal credentials",
+      "type": "object",
+      "properties": {
+        "rollNo": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "parentContact": { "type": "string" },
+        "studentClass": { "type": "string" },
+        "admissionDate": { "type": "string" },
+        "passcode": { "type": "string" },
+        "avatar": { "type": "string" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["rollNo", "name", "studentClass"]
+    },
+    "materials": {
+      "title": "Study Materials",
+      "description": "Curated PDF revision notes, question banks, and syllabus modules",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "subject": { "type": "string" },
+        "studentClass": { "type": "string" },
+        "category": { "type": "string" },
+        "fileUrl": { "type": "string" },
+        "fileName": { "type": "string" },
+        "fileSize": { "type": "string" },
+        "description": { "type": "string" },
+        "downloadCount": { "type": "number" },
+        "chapters": { "type": "array" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["title", "subject", "studentClass", "category"]
+    },
+    "videos": {
+      "title": "Video Lectures",
+      "description": "Recorded classroom lectures and conceptual topic walkthroughs",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "subject": { "type": "string" },
+        "studentClass": { "type": "string" },
+        "videoUrl": { "type": "string" },
+        "duration": { "type": "string" },
+        "instructor": { "type": "string" },
+        "thumbnail": { "type": "string" },
+        "description": { "type": "string" },
+        "views": { "type": "number" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["title", "subject", "studentClass", "videoUrl"]
+    },
+    "tests": {
+      "title": "Tests & Exams",
+      "description": "Weekly tests, chapter quizzes, and full mock tests",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "subject": { "type": "string" },
+        "grade": { "type": "string" },
+        "testType": { "type": "string" },
+        "questionsCount": { "type": "number" },
+        "durationMinutes": { "type": "number" },
+        "totalMarks": { "type": "number" },
+        "scheduledDate": { "type": "string" },
+        "scheduledTime": { "type": "string" },
+        "isPublished": { "type": "boolean" },
+        "questions": { "type": "array" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["title", "subject", "grade", "durationMinutes"]
+    },
+    "results": {
+      "title": "Test Results",
+      "description": "Submitted test attempts, scorecards, and ranking performance records",
+      "type": "object",
+      "properties": {
+        "testId": { "type": "string" },
+        "testTitle": { "type": "string" },
+        "studentId": { "type": "string" },
+        "studentName": { "type": "string" },
+        "studentClass": { "type": "string" },
+        "rollNo": { "type": "string" },
+        "subject": { "type": "string" },
+        "score": { "type": "number" },
+        "totalMarks": { "type": "number" },
+        "percentage": { "type": "number" },
+        "rank": { "type": "number" },
+        "date": { "type": "string" },
+        "isPublished": { "type": "boolean" },
+        "detailedScores": { "type": "array" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["testId", "studentName", "score", "totalMarks"]
+    },
+    "fees": {
+      "title": "Fee Ledgers",
+      "description": "Student fee packages, installments, transaction receipts and due status",
+      "type": "object",
+      "properties": {
+        "studentId": { "type": "string" },
+        "studentName": { "type": "string" },
+        "rollNo": { "type": "string" },
+        "studentClass": { "type": "string" },
+        "totalFee": { "type": "number" },
+        "paidAmount": { "type": "number" },
+        "dueAmount": { "type": "number" },
+        "dueDate": { "type": "string" },
+        "status": { "type": "string" },
+        "payments": { "type": "array" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["studentId", "totalFee", "paidAmount", "dueAmount", "status"]
+    },
+    "announcements": {
+      "title": "Announcements & Notices",
+      "description": "Administrative circulars, exam schedules, and holiday announcements",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "category": { "type": "string" },
+        "targetClass": { "type": "string" },
+        "date": { "type": "string" },
+        "priority": { "type": "string" },
+        "author": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["title", "content", "category", "targetClass"]
+    },
+    "notifications": {
+      "title": "User Notifications",
+      "description": "Targeted notifications and alerts for students and admins",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string" },
+        "date": { "type": "string" },
+        "isRead": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["title", "message"]
+    },
+    "systemConfig": {
+      "title": "System Configuration",
+      "description": "Academy settings, admin credentials, and institution profile",
+      "type": "object",
+      "properties": {
+        "academyName": { "type": "string" },
+        "adminPassword": { "type": "string" },
+        "academicYear": { "type": "string" },
+        "contactPhone": { "type": "string" },
+        "contactEmail": { "type": "string" }
+      }
+    }
+  }
+}

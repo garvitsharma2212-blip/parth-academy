@@ -1,6 +1,6 @@
 {
   "name": "Parth Academy",
-  "description": "Mobile-friendly learning platform for Parth Academy featuring study materials, chapter notes, interactive tests, weekly exam schedules, and performance results.",
+  "description": "Full-stack coaching institute management portal with Firebase Firestore & Storage: Admin panel for PDF notes upload, video lectures, test management, student roster, fee tracking, results publishing, and student portal.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
