@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { StudentNavTab, AdminNavTab } from './types';
 
-// Student Portal Components
+// Student Mobile-First Coaching App Components
 import { StudentHeader } from './components/student/StudentHeader';
-import { StudentDashboard } from './components/student/StudentDashboard';
+import { StudentHome } from './components/student/StudentHome';
 import { StudentMaterials } from './components/student/StudentMaterials';
 import { StudentVideos } from './components/student/StudentVideos';
 import { StudentTests } from './components/student/StudentTests';
-import { StudentResults } from './components/student/StudentResults';
-import { StudentFees } from './components/student/StudentFees';
+import { StudentProfile } from './components/student/StudentProfile';
+import { BottomNavBar } from './components/student/BottomNavBar';
 
 // Admin Portal Components
 import { AdminHeader } from './components/admin/AdminHeader';
@@ -31,6 +31,7 @@ const MainApp: React.FC = () => {
   const {
     currentRole,
     adminUser,
+    isAdminAuthenticated,
     switchRole,
     isAuthModalOpen,
     setIsAuthModalOpen,
@@ -40,154 +41,69 @@ const MainApp: React.FC = () => {
     setIsNotificationsOpen,
   } = useApp();
 
-  // Navigation states
-  const [studentTab, setStudentTab] = useState<StudentNavTab>('dashboard');
+  // Navigation states - Default to mobile-first Home page
+  const [studentTab, setStudentTab] = useState<StudentNavTab>('home');
   const [adminTab, setAdminTab] = useState<AdminNavTab>('overview');
-  const [adminModalMode, setAdminModalMode] = useState<'login' | 'change_password'>('login');
+  const [adminModalMode, setAdminModalMode] = useState<'login' | 'change_password' | 'forgot_password' | 'setup'>('login');
+
+  // Enforce security: admin panel is completely separate and visible only after admin login
+  useEffect(() => {
+    if (currentRole === 'admin' && !isAdminAuthenticated) {
+      switchRole('student');
+    }
+  }, [currentRole, isAdminAuthenticated, switchRole]);
 
   const handleOpenChangePassword = () => {
     setAdminModalMode('change_password');
     setIsAdminLoginModalOpen(true);
   };
 
+  const handleAdminAccessClick = () => {
+    if (isAdminAuthenticated && adminUser) {
+      switchRole('admin');
+    } else {
+      setAdminModalMode('login');
+      setIsAdminLoginModalOpen(true);
+    }
+  };
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f4f7fb' }}>
-      {/* ROLE: ADMIN PORTAL */}
-      {currentRole === 'admin' ? (
+      {/* ROLE: ADMIN PORTAL - STRICTLY SEPARATE & VISIBLE ONLY AFTER ADMIN LOGIN */}
+      {currentRole === 'admin' && isAdminAuthenticated && adminUser ? (
         <>
-          {adminUser ? (
-            <>
-              <AdminHeader
-                activeTab={adminTab}
-                setActiveTab={setAdminTab}
-                onOpenChangePassword={handleOpenChangePassword}
-              />
-              <main style={{ flex: 1, maxWidth: '1360px', margin: '0 auto', width: '100%', padding: '0 20px' }}>
-                {adminTab === 'overview' && <AdminOverview onNavigate={setAdminTab} />}
-                {adminTab === 'materials' && <AdminMaterials />}
-                {adminTab === 'videos' && <AdminVideos />}
-                {adminTab === 'tests' && <AdminTests />}
-                {adminTab === 'results' && <AdminResults />}
-                {adminTab === 'fees' && <AdminFees />}
-                {adminTab === 'students' && <AdminStudents />}
-                {adminTab === 'announcements' && <AdminAnnouncements />}
-              </main>
-            </>
-          ) : (
-            // Admin Login Gate Screen
-            <div
-              style={{
-                flex: 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '40px 20px',
-                background: 'linear-gradient(135deg, #092b63 0%, #041738 100%)',
-              }}
-            >
-              <div
-                style={{
-                  background: '#ffffff',
-                  borderRadius: '16px',
-                  padding: '36px 32px',
-                  maxWidth: '440px',
-                  width: '100%',
-                  boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
-                  textAlign: 'center',
-                }}
-              >
-                <div
-                  style={{
-                    width: '64px',
-                    height: '64px',
-                    borderRadius: '16px',
-                    background: '#092b63',
-                    color: '#ffb703',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '26px',
-                    fontWeight: 900,
-                    margin: '0 auto 16px auto',
-                  }}
-                >
-                  PA
-                </div>
-                <h2 style={{ fontSize: '22px', color: '#092b63', margin: '0 0 6px 0' }}>
-                  Admin Security Gateway
-                </h2>
-                <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 24px 0' }}>
-                  Access restricted to institute directors, teachers, and account officers.
-                </p>
-
-                <div
-                  style={{
-                    background: '#eff6ff',
-                    border: '1px solid #bfdbfe',
-                    borderRadius: '10px',
-                    padding: '12px',
-                    fontSize: '12px',
-                    color: '#1e40af',
-                    marginBottom: '20px',
-                    textAlign: 'left',
-                  }}
-                >
-                  <b>Default Administrative Credentials:</b>
-                  <div style={{ marginTop: '4px' }}>Email: <code>admin@parthacademy.com</code></div>
-                  <div>Passcode: <code>admin123</code></div>
-                </div>
-
-                <button
-                  onClick={() => {
-                    setAdminModalMode('login');
-                    setIsAdminLoginModalOpen(true);
-                  }}
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    borderRadius: '10px',
-                    background: '#092b63',
-                    color: '#ffffff',
-                    fontWeight: 700,
-                    fontSize: '14px',
-                    border: 'none',
-                    cursor: 'pointer',
-                    boxShadow: '0 4px 12px rgba(9, 43, 99, 0.3)',
-                    marginBottom: '12px',
-                  }}
-                >
-                  🔒 Unlock Admin Panel
-                </button>
-
-                <button
-                  onClick={() => switchRole('student')}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: '#64748b',
-                    fontSize: '13px',
-                    cursor: 'pointer',
-                    textDecoration: 'underline',
-                  }}
-                >
-                  Return to Student Portal
-                </button>
-              </div>
-            </div>
-          )}
+          <AdminHeader
+            activeTab={adminTab}
+            setActiveTab={setAdminTab}
+            onOpenChangePassword={handleOpenChangePassword}
+          />
+          <main style={{ flex: 1, maxWidth: '1360px', margin: '0 auto', width: '100%', padding: '0 20px 40px 20px' }}>
+            {adminTab === 'overview' && <AdminOverview onNavigate={setAdminTab} />}
+            {adminTab === 'materials' && <AdminMaterials />}
+            {adminTab === 'videos' && <AdminVideos />}
+            {adminTab === 'tests' && <AdminTests />}
+            {adminTab === 'results' && <AdminResults />}
+            {adminTab === 'fees' && <AdminFees />}
+            {adminTab === 'students' && <AdminStudents />}
+            {adminTab === 'announcements' && <AdminAnnouncements />}
+          </main>
         </>
       ) : (
-        /* ROLE: STUDENT PORTAL */
-        <>
+        /* ROLE: STUDENT PORTAL (MOBILE-FIRST COACHING APP) */
+        <div style={{ paddingBottom: '76px', display: 'flex', flexDirection: 'column', flex: 1 }}>
           <StudentHeader activeTab={studentTab} setActiveTab={setStudentTab} />
 
-          <main style={{ flex: 1, maxWidth: '1280px', margin: '0 auto', width: '100%', padding: '0 20px' }}>
-            {studentTab === 'dashboard' && <StudentDashboard onNavigate={setStudentTab} />}
+          <main style={{ flex: 1, maxWidth: '1200px', margin: '0 auto', width: '100%', padding: '0 16px' }}>
+            {/* Separate pages for each of the 5 navigation sections */}
+            {(studentTab === 'home' || studentTab === 'dashboard') && (
+              <StudentHome onNavigate={setStudentTab} />
+            )}
             {studentTab === 'materials' && <StudentMaterials />}
             {studentTab === 'videos' && <StudentVideos />}
-            {studentTab === 'tests' && <StudentTests />}
-            {studentTab === 'results' && <StudentResults />}
-            {studentTab === 'fees' && <StudentFees />}
+            {(studentTab === 'tests' || studentTab === 'results') && <StudentTests />}
+            {(studentTab === 'profile' || studentTab === 'fees') && (
+              <StudentProfile onLogoutClick={() => setStudentTab('home')} />
+            )}
           </main>
 
           {/* Institutional Footer */}
@@ -195,71 +111,84 @@ const MainApp: React.FC = () => {
             style={{
               background: '#092b63',
               color: '#ffffff',
-              padding: '36px 20px 24px 20px',
+              padding: '36px 20px 32px 20px',
               marginTop: '40px',
               borderTop: '3px solid #ffb703',
             }}
           >
             <div
               style={{
-                maxWidth: '1280px',
+                maxWidth: '1200px',
                 margin: '0 auto',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 flexWrap: 'wrap',
-                gap: '20px',
+                gap: '24px',
                 borderBottom: '1px solid rgba(255,255,255,0.12)',
                 paddingBottom: '24px',
               }}
             >
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
                   <div
                     style={{
-                      width: '32px',
-                      height: '32px',
-                      borderRadius: '8px',
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '10px',
                       background: '#ffb703',
                       color: '#092b63',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       fontWeight: 900,
-                      fontSize: '15px',
+                      fontSize: '16px',
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
                     }}
                   >
                     PA
                   </div>
-                  <span style={{ fontSize: '18px', fontWeight: 800, color: '#ffffff' }}>PARTH ACADEMY</span>
+                  <span style={{ fontSize: '18px', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.2px' }}>
+                    PARTH ACADEMY
+                  </span>
                 </div>
-                <p style={{ margin: 0, fontSize: '12px', color: '#93c5fd', maxWidth: '400px' }}>
+                <p style={{ margin: 0, fontSize: '12px', color: '#93c5fd', maxWidth: '420px', lineHeight: 1.5 }}>
                   Premier Coaching Institute for Class 10th & Class 12th CBSE Boards, JEE Mains, and NEET Foundation.
                 </p>
               </div>
 
-              <div style={{ display: 'flex', gap: '20px', fontSize: '13px', color: '#cbd5e1' }}>
+              <div style={{ display: 'flex', gap: '28px', fontSize: '13px', color: '#cbd5e1', flexWrap: 'wrap' }}>
                 <div>
-                  <b style={{ color: '#ffffff', display: 'block', marginBottom: '4px' }}>Admissions Office</b>
-                  <div>Sector 14, Main Institutional Area</div>
-                  <div>Helpline: +91 98765 00000</div>
+                  <b style={{ color: '#ffffff', display: 'block', marginBottom: '6px', fontSize: '13px' }}>
+                    Admissions Office:
+                  </b>
+                  <div style={{ color: '#f1f5f9' }}>Near Priya School, Baran Road, Antah, Rajasthan</div>
+                  <div style={{ color: '#ffb703', fontWeight: 700, marginTop: '2px' }}>
+                    Helpline: +91 97846 64518
+                  </div>
                 </div>
+
                 <div>
-                  <b style={{ color: '#ffffff', display: 'block', marginBottom: '4px' }}>Administrative Access</b>
+                  <b style={{ color: '#ffffff', display: 'block', marginBottom: '6px', fontSize: '13px' }}>
+                    Administrative Access
+                  </b>
                   <button
-                    onClick={() => switchRole('admin')}
+                    onClick={handleAdminAccessClick}
                     style={{
                       background: '#ffb703',
                       color: '#092b63',
                       border: 'none',
-                      padding: '4px 12px',
-                      borderRadius: '6px',
+                      padding: '7px 14px',
+                      borderRadius: '8px',
                       fontSize: '12px',
                       fontWeight: 800,
                       cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
                     }}
                   >
-                    🛡️ Admin Panel Login
+                    <span>🛡️</span> Admin Panel Login
                   </button>
                 </div>
               </div>
@@ -267,21 +196,31 @@ const MainApp: React.FC = () => {
 
             <div
               style={{
-                maxWidth: '1280px',
+                maxWidth: '1200px',
                 margin: '16px auto 0 auto',
                 display: 'flex',
                 justifyContent: 'space-between',
-                fontSize: '11px',
-                color: '#93c5fd',
+                fontSize: '12px',
+                color: '#cbd5e1',
                 flexWrap: 'wrap',
                 gap: '8px',
               }}
             >
-              <span>© 2026 Parth Academy. All rights reserved. Designed for Excellence.</span>
-              <span>Class 10th & 12th Coaching Management Platform</span>
+              <div>
+                <div>© 2026 Parth Academy. All rights reserved.</div>
+                <div style={{ color: '#ffb703', fontWeight: 600, marginTop: '2px' }}>
+                  Designed by Garvit Sharma
+                </div>
+              </div>
+              <div style={{ fontSize: '11px', color: '#93c5fd', display: 'flex', alignItems: 'center' }}>
+                Mobile-First Coaching Portal • CBSE & Foundation Batches
+              </div>
             </div>
           </footer>
-        </>
+
+          {/* Bottom Navigation Bar for Mobile-First Coaching App */}
+          <BottomNavBar activeTab={studentTab} setActiveTab={setStudentTab} />
+        </div>
       )}
 
       {/* GLOBAL MODALS */}

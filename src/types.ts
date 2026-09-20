@@ -164,7 +164,15 @@ export interface NotificationItem {
   targetClass?: 'All' | StudentClass;
 }
 
-export type StudentNavTab = 'dashboard' | 'materials' | 'videos' | 'tests' | 'results' | 'fees';
+export type StudentNavTab =
+  | 'home'
+  | 'materials'
+  | 'videos'
+  | 'tests'
+  | 'profile'
+  | 'dashboard'
+  | 'results'
+  | 'fees';
 export type AdminNavTab =
   | 'overview'
   | 'materials'

@@ -5,9 +5,16 @@ import {
   setDoc,
   deleteDoc,
   onSnapshot,
-  getDoc,
 } from 'firebase/firestore';
-import { db, uploadFileToStorage } from '../firebase';
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  signOut,
+  onAuthStateChanged,
+  updatePassword,
+} from 'firebase/auth';
+import { db, auth, uploadFileToStorage } from '../firebase';
 import {
   Student,
   AdminUser,
@@ -35,6 +42,8 @@ import {
   INITIAL_NOTIFICATIONS,
 } from '../data/initialData';
 
+export const SECURE_ADMIN_EMAIL = 'garvitsharma2212@gmail.com';
+
 interface AppContextType {
   // Auth & Roles
   currentRole: UserRole;
@@ -43,9 +52,11 @@ interface AppContextType {
   isAdminAuthenticated: boolean;
   selectedClass: StudentClass;
   setSelectedClass: (cls: StudentClass) => void;
-  loginAdmin: (password: string) => boolean;
-  logoutAdmin: () => void;
-  changeAdminPassword: (oldPass: string, newPass: string) => Promise<boolean> | boolean;
+  loginAdmin: (password: string, email?: string) => Promise<{ success: boolean; error?: string }>;
+  setupAdminAccount: (password: string) => Promise<{ success: boolean; error?: string }>;
+  sendAdminPasswordReset: () => Promise<{ success: boolean; error?: string }>;
+  changeAdminPassword: (newPass: string) => Promise<{ success: boolean; error?: string }>;
+  logoutAdmin: () => Promise<void>;
   loginStudent: (identifier: string) => boolean;
   registerStudent: (data: {
     name: string;
@@ -147,13 +158,8 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Role & Session State
   const [currentRole, setCurrentRole] = useState<UserRole>('student');
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(() => {
-    return localStorage.getItem('pa_admin_auth') === 'true';
-  });
-  const [adminPassword, setAdminPassword] = useState<string>(() => {
-    return localStorage.getItem('pa_admin_pwd') || 'admin123';
-  });
-  const [adminUser] = useState<AdminUser>(INITIAL_ADMIN);
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
+  const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
 
   // Core Data States
   const [students, setStudents] = useState<Student[]>(() => {
@@ -418,19 +424,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       (err) => console.warn('Firestore notifications listener:', err)
     );
 
-    // 9. Load System Config (admin password)
-    getDoc(doc(db, 'systemConfig', 'default'))
-      .then((cfgSnap) => {
-        if (cfgSnap.exists()) {
-          const data = cfgSnap.data();
-          if (data?.adminPassword) {
-            setAdminPassword(data.adminPassword);
-          }
-        }
-      })
-      .catch((e) => console.warn('Firestore systemConfig fetch:', e));
+    // 9. Listen to Firebase Authentication State for Admin
+    const unsubAuth = onAuthStateChanged(auth, (fbUser) => {
+      if (fbUser && fbUser.email?.toLowerCase() === SECURE_ADMIN_EMAIL.toLowerCase()) {
+        setIsAdminAuthenticated(true);
+        setAdminUser({
+          id: fbUser.uid,
+          email: fbUser.email || SECURE_ADMIN_EMAIL,
+          name: 'Director Garvit Sharma',
+          role: 'superadmin',
+          lastLogin: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        });
+      } else {
+        setIsAdminAuthenticated(false);
+        setAdminUser(null);
+        setCurrentRole((prev) => (prev === 'admin' ? 'student' : prev));
+      }
+    });
 
     return () => {
+      unsubAuth();
       unsubStudents();
       unsubMaterials();
       unsubVideos();
@@ -447,36 +460,124 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem('pa_selected_class', cls);
   };
 
-  // Auth Methods
-  const loginAdmin = (password: string): boolean => {
-    if (password === adminPassword || password === 'admin123') {
-      setIsAdminAuthenticated(true);
-      setCurrentRole('admin');
-      localStorage.setItem('pa_admin_auth', 'true');
-      setIsAdminLoginModalOpen(false);
-      return true;
+  // Firebase Authentication Admin Methods
+  const loginAdmin = async (
+    password: string,
+    email?: string
+  ): Promise<{ success: boolean; error?: string }> => {
+    const targetEmail = (email || SECURE_ADMIN_EMAIL).trim().toLowerCase();
+    if (targetEmail !== SECURE_ADMIN_EMAIL.toLowerCase()) {
+      return {
+        success: false,
+        error: `Access Denied: Only the authorized director account (${SECURE_ADMIN_EMAIL}) has administrative rights.`,
+      };
     }
-    return false;
-  };
 
-  const logoutAdmin = () => {
-    setIsAdminAuthenticated(false);
-    setCurrentRole('student');
-    localStorage.removeItem('pa_admin_auth');
-  };
-
-  const changeAdminPassword = async (oldPass: string, newPass: string): Promise<boolean> => {
-    if (oldPass === adminPassword || oldPass === 'admin123') {
-      setAdminPassword(newPass);
-      localStorage.setItem('pa_admin_pwd', newPass);
-      try {
-        await setDoc(doc(db, 'systemConfig', 'default'), { adminPassword: newPass }, { merge: true });
-      } catch (err) {
-        console.warn('Failed to save admin password in Firestore:', err);
+    try {
+      const userCred = await signInWithEmailAndPassword(auth, targetEmail, password);
+      if (userCred.user.email?.toLowerCase() === SECURE_ADMIN_EMAIL.toLowerCase()) {
+        setIsAdminAuthenticated(true);
+        setAdminUser({
+          id: userCred.user.uid,
+          email: userCred.user.email || SECURE_ADMIN_EMAIL,
+          name: 'Director Garvit Sharma',
+          role: 'superadmin',
+          lastLogin: 'Verified Active Session',
+        });
+        setCurrentRole('admin');
+        setIsAdminLoginModalOpen(false);
+        return { success: true };
+      } else {
+        await signOut(auth);
+        return { success: false, error: 'Unauthorized role.' };
       }
-      return true;
+    } catch (err: any) {
+      let msg = 'Authentication failed. Please verify your secret password.';
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
+        msg = 'Invalid credentials or account not yet initialized. Click "First-Time Admin Setup" to set up your secret password.';
+      } else if (err.code === 'auth/wrong-password') {
+        msg = 'Incorrect secret password. Use "Forgot Password?" to reset your password.';
+      } else if (err.code === 'auth/too-many-requests') {
+        msg = 'Access temporarily restricted due to consecutive failed attempts. Please use Forgot Password or wait a moment.';
+      } else if (err.message) {
+        msg = err.message;
+      }
+      return { success: false, error: msg };
     }
-    return false;
+  };
+
+  const setupAdminAccount = async (
+    password: string
+  ): Promise<{ success: boolean; error?: string }> => {
+    if (!password || password.length < 6) {
+      return { success: false, error: 'Secret password must be at least 6 characters long.' };
+    }
+
+    try {
+      const userCred = await createUserWithEmailAndPassword(auth, SECURE_ADMIN_EMAIL, password);
+      setIsAdminAuthenticated(true);
+      setAdminUser({
+        id: userCred.user.uid,
+        email: userCred.user.email || SECURE_ADMIN_EMAIL,
+        name: 'Director Garvit Sharma',
+        role: 'superadmin',
+        lastLogin: 'Account Initialized',
+      });
+      setCurrentRole('admin');
+      setIsAdminLoginModalOpen(false);
+      return { success: true };
+    } catch (err: any) {
+      let msg = 'Failed to create admin credentials in Firebase.';
+      if (err.code === 'auth/email-already-in-use') {
+        msg = 'Admin account is already registered in Firebase. Please sign in with your secret password or use "Forgot Password".';
+      } else if (err.message) {
+        msg = err.message;
+      }
+      return { success: false, error: msg };
+    }
+  };
+
+  const sendAdminPasswordReset = async (): Promise<{ success: boolean; error?: string }> => {
+    try {
+      await sendPasswordResetEmail(auth, SECURE_ADMIN_EMAIL);
+      return { success: true };
+    } catch (err: any) {
+      let msg = 'Failed to send password reset email.';
+      if (err.code === 'auth/user-not-found') {
+        msg = `No account found for ${SECURE_ADMIN_EMAIL}. Use "First-Time Admin Setup" to initialize your credentials.`;
+      } else if (err.message) {
+        msg = err.message;
+      }
+      return { success: false, error: msg };
+    }
+  };
+
+  const changeAdminPassword = async (
+    newPass: string
+  ): Promise<{ success: boolean; error?: string }> => {
+    if (!newPass || newPass.length < 6) {
+      return { success: false, error: 'New password must be at least 6 characters.' };
+    }
+    if (!auth.currentUser) {
+      return { success: false, error: 'No active authenticated admin session found. Please sign in first.' };
+    }
+    try {
+      await updatePassword(auth.currentUser, newPass);
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Failed to update password.' };
+    }
+  };
+
+  const logoutAdmin = async (): Promise<void> => {
+    try {
+      await signOut(auth);
+    } catch (e) {
+      console.warn('Sign out error:', e);
+    }
+    setIsAdminAuthenticated(false);
+    setAdminUser(null);
+    setCurrentRole('student');
   };
 
   const loginStudent = (identifier: string): boolean => {
@@ -1160,6 +1261,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         selectedClass,
         setSelectedClass,
         loginAdmin,
+        setupAdminAccount,
+        sendAdminPasswordReset,
         logoutAdmin,
         changeAdminPassword,
         loginStudent,

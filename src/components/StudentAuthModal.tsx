@@ -193,7 +193,7 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({ onClose }) =
                   type="text"
                   value={loginInput}
                   onChange={(e) => setLoginInput(e.target.value)}
-                  placeholder="e.g. PA-12-1084 or garvitsharma2212@gmail.com"
+                  placeholder="e.g. PA-12-1084 or student@parthacademy.com"
                   style={{
                     width: '100%',
                     padding: '10px 12px',

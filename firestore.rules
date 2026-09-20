@@ -1,36 +1,76 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Permit read and write for Parth Academy collections
-    match /students/{studentId} {
-      allow read, write: if true;
+    // Helper function to check if the authenticated user is the authorized admin
+    function isAdmin() {
+      return request.auth != null && 
+        request.auth.token.email != null &&
+        request.auth.token.email.lower() == 'garvitsharma2212@gmail.com';
     }
+
+    // Study Materials (Notes, Question Banks, Papers)
+    // Students can read/download notes; only authenticated Director can upload/delete
     match /materials/{materialId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if isAdmin();
     }
+
+    // Video Lectures
+    // Students can read/watch video lectures; only authenticated Director can upload/delete
     match /videos/{videoId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create, delete: if isAdmin();
+      allow update: if true; // Allows marking video as watched by students or updating details by admin
     }
+
+    // Scheduled Tests and Examinations
+    // Students can view test schedules; only authenticated Director can create/delete
     match /tests/{testId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if isAdmin();
     }
-    match /results/{resultId} {
-      allow read, write: if true;
+
+    // Test Attempts and Scorecards
+    // Students can attempt tests and submit scores; only Director can publish or delete records
+    match /attempts/{attemptId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if isAdmin();
     }
+
+    // Fee Ledgers & Online Installment Payments
+    // Students can view fee breakdown and submit installment payments; Director can update records
     match /fees/{feeId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if isAdmin();
     }
+
+    // Enrolled Students Roster
+    // Public/Students can register or update profile; Director can manage all student records
+    match /students/{studentId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if true;
+    }
+
+    // Institute Announcements and Notices
+    // Students can read official notices; only Director can create/delete
     match /announcements/{announcementId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if isAdmin();
     }
+
+    // Notifications Feed
     match /notifications/{notificationId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if isAdmin();
     }
+
+    // System Configuration
     match /systemConfig/{configId} {
-      allow read, write: if true;
-    }
-    match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if isAdmin();
     }
   }
 }

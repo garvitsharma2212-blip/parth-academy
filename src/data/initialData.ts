@@ -11,11 +11,11 @@ import {
 } from '../types';
 
 export const INITIAL_ADMIN: AdminUser = {
-  id: 'admin-01',
-  email: 'admin@parthacademy.com',
-  name: 'Director Parth Sharma',
+  id: 'admin-garvit',
+  email: 'garvitsharma2212@gmail.com',
+  name: 'Director Garvit Sharma',
   role: 'superadmin',
-  lastLogin: 'Today, 09:30 AM',
+  lastLogin: 'Active Session',
 };
 
 export const INITIAL_STUDENTS: Student[] = [

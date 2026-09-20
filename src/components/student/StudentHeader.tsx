@@ -23,12 +23,11 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({ activeTab, setActi
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const navItems: { id: StudentNavTab; label: string; icon: string }[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: '🏠' },
-    { id: 'materials', label: 'Study Materials', icon: '📚' },
+    { id: 'home', label: 'Home', icon: '🏠' },
+    { id: 'materials', label: 'Study Material', icon: '📚' },
     { id: 'videos', label: 'Video Lectures', icon: '🎥' },
-    { id: 'tests', label: 'Online Tests', icon: '⏱️' },
-    { id: 'results', label: 'Results & Ranks', icon: '🏆' },
-    { id: 'fees', label: 'Fees & Receipts', icon: '💳' },
+    { id: 'tests', label: 'Tests', icon: '⏱️' },
+    { id: 'profile', label: 'Profile', icon: '👤' },
   ];
 
   return (
@@ -50,7 +49,7 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({ activeTab, setActi
             ★ ADMISSIONS OPEN FOR 2026-27 • CBSE BOARDS & JEE/NEET BATCHES
           </span>
           <span style={{ display: 'none', color: '#94a3b8' }} className="sm-show">
-            Helpline: +91 98765 00000
+            Helpline: +91 97846 64518
           </span>
         </div>
 
@@ -89,9 +88,9 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({ activeTab, setActi
             </button>
           </div>
 
-          {/* Admin Login Button */}
+          {/* Admin Login Button - Securely opens login modal */}
           <button
-            onClick={() => switchRole('admin')}
+            onClick={() => setIsAdminLoginModalOpen(true)}
             style={{
               background: '#ffb703',
               color: '#092b63',
@@ -106,7 +105,7 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({ activeTab, setActi
               gap: '4px',
             }}
           >
-            <span>🛡️</span> Admin Portal
+            <span>🛡️</span> Admin Login
           </button>
         </div>
       </div>
@@ -125,7 +124,7 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({ activeTab, setActi
         }}
       >
         {/* Brand */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => setActiveTab('dashboard')}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => setActiveTab('home')}>
           <div
             style={{
               width: '42px',

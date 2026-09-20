@@ -22,7 +22,7 @@ export const StudentVideos: React.FC = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span
             style={{
-              background: '#dc2626',
+              background: '#092b63',
               color: '#ffffff',
               fontSize: '11px',
               fontWeight: 700,
@@ -30,39 +30,193 @@ export const StudentVideos: React.FC = () => {
               borderRadius: '6px',
             }}
           >
-            YOUTUBE VIDEO VAULT
+            PARTH VIDEO CLASSROOM
           </span>
           <span style={{ fontSize: '12px', color: '#64748b' }}>{selectedClass} Video Lectures</span>
         </div>
-        <h1 style={{ fontSize: '24px', color: '#092b63', margin: '4px 0' }}>Recorded Video Classes & Concepts</h1>
+        <h1 style={{ fontSize: '24px', color: '#092b63', margin: '4px 0' }}>Video Lectures & Concept Marathons</h1>
         <p style={{ fontSize: '14px', color: '#64748b', margin: 0 }}>
-          Watch interactive video lectures by expert faculty, complete with numerical shortcuts and derivation breakdowns.
+          Watch recorded video classes by Parth Academy faculty, complete with solved derivations and shortcuts.
         </p>
       </div>
 
-      {/* Subject Filter Pills */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', overflowX: 'auto', paddingBottom: '4px' }}>
-        {subjects.map((sub) => {
-          const isActive = activeSubject === sub;
-          return (
-            <button
-              key={sub}
-              onClick={() => setActiveSubject(sub)}
-              style={{
-                padding: '6px 14px',
-                borderRadius: '20px',
-                border: isActive ? '1.5px solid #1261c9' : '1px solid #cbd5e1',
-                background: isActive ? '#eff6ff' : '#ffffff',
-                color: isActive ? '#1261c9' : '#475569',
-                fontSize: '13px',
-                fontWeight: isActive ? 700 : 500,
-                cursor: 'pointer',
-              }}
-            >
-              {sub}
-            </button>
-          );
-        })}
+      {/* 1. CONTINUE WATCHING SECTION */}
+      {classVideos.length > 0 && (
+        <div
+          style={{
+            background: 'linear-gradient(135deg, #092b63 0%, #172554 100%)',
+            borderRadius: '16px',
+            padding: '18px 20px',
+            color: '#ffffff',
+            marginBottom: '24px',
+            boxShadow: '0 4px 16px rgba(9, 43, 99, 0.15)',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '16px' }}>▶️</span>
+              <h2 style={{ fontSize: '15px', fontWeight: 800, color: '#ffb703', margin: 0 }}>
+                Continue Watching
+              </h2>
+            </div>
+            <span style={{ fontSize: '11px', color: '#93c5fd', background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '12px' }}>
+              Last Watched
+            </span>
+          </div>
+
+          {(() => {
+            const continueVid = classVideos[0];
+            return (
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '16px',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                }}
+              >
+                {/* Mini Thumbnail with Play overlay */}
+                <div
+                  onClick={() => setSelectedVideo(continueVid)}
+                  style={{
+                    position: 'relative',
+                    width: '140px',
+                    height: '84px',
+                    borderRadius: '10px',
+                    overflow: 'hidden',
+                    background: '#000',
+                    cursor: 'pointer',
+                    flexShrink: 0,
+                    boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+                  }}
+                >
+                  <img
+                    src={`https://img.youtube.com/vi/${continueVid.videoId}/mqdefault.jpg`}
+                    alt={continueVid.title}
+                    referrerPolicy="no-referrer"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      background: 'rgba(0,0,0,0.35)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '50%',
+                        background: '#ffb703',
+                        color: '#092b63',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '14px',
+                        fontWeight: 900,
+                      }}
+                    >
+                      ▶
+                    </div>
+                  </div>
+                  <span
+                    style={{
+                      position: 'absolute',
+                      bottom: '4px',
+                      right: '4px',
+                      background: 'rgba(0,0,0,0.75)',
+                      color: '#fff',
+                      fontSize: '9px',
+                      padding: '1px 4px',
+                      borderRadius: '3px',
+                      fontWeight: 700,
+                    }}
+                  >
+                    {continueVid.duration}
+                  </span>
+                </div>
+
+                <div style={{ flex: 1, minWidth: '220px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 800, background: '#ffb703', color: '#092b63', padding: '1px 6px', borderRadius: '4px' }}>
+                      {continueVid.subject}
+                    </span>
+                    <span style={{ fontSize: '11px', color: '#cbd5e1' }}>Faculty: {continueVid.instructor}</span>
+                  </div>
+
+                  <h3 style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: 700, color: '#ffffff' }}>
+                    {continueVid.title}
+                  </h3>
+
+                  {/* Progress Bar (Simulated 68% progress) */}
+                  <div style={{ marginBottom: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#93c5fd', marginBottom: '4px' }}>
+                      <span>68% Completed</span>
+                      <span>14 mins remaining</span>
+                    </div>
+                    <div style={{ width: '100%', height: '5px', background: 'rgba(255,255,255,0.2)', borderRadius: '4px', overflow: 'hidden' }}>
+                      <div style={{ width: '68%', height: '100%', background: '#ffb703', borderRadius: '4px' }} />
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setSelectedVideo(continueVid)}
+                    style={{
+                      background: '#ffb703',
+                      color: '#092b63',
+                      border: 'none',
+                      padding: '6px 14px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                    }}
+                  >
+                    <span>▶</span> Resume Lecture
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
+      {/* 2. SUBJECT CATEGORIES */}
+      <div style={{ marginBottom: '14px' }}>
+        <h2 style={{ fontSize: '15px', fontWeight: 800, color: '#092b63', margin: '0 0 10px 0' }}>
+          Subject Categories
+        </h2>
+        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+          {subjects.map((sub) => {
+            const isActive = activeSubject === sub;
+            return (
+              <button
+                key={sub}
+                onClick={() => setActiveSubject(sub)}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: '20px',
+                  border: isActive ? '1.5px solid #092b63' : '1px solid #cbd5e1',
+                  background: isActive ? '#092b63' : '#ffffff',
+                  color: isActive ? '#ffffff' : '#475569',
+                  fontSize: '13px',
+                  fontWeight: isActive ? 700 : 500,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {sub}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Video Grid */}

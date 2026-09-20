@@ -69,7 +69,7 @@ export const FeeReceiptModal: React.FC<FeeReceiptModalProps> = ({ feeRecord, pay
                 Senior Secondary Coaching Institute • Reg. No: PA-EDU/2026/041
               </p>
               <p style={{ fontSize: '11px', color: '#64748b', margin: '2px 0 0 0' }}>
-                Sector 14, Main Campus • Phone: +91 98765 00000 • accounts@parthacademy.com
+                Near Priya School, Baran Road, Antah, Rajasthan • Helpline: +91 97846 64518 • accounts@parthacademy.com
               </p>
             </div>
 

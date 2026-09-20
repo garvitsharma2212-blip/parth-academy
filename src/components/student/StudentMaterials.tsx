@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { StudyMaterialItem, MaterialCategory } from '../../types';
+import { StudyMaterialItem } from '../../types';
+import { InAppPdfViewerModal } from './InAppPdfViewerModal';
 import { MaterialViewerModal } from '../MaterialViewerModal';
 
 export const StudentMaterials: React.FC = () => {
@@ -244,8 +245,8 @@ export const StudentMaterials: React.FC = () => {
                   style={{
                     flex: 1,
                     padding: '10px 14px',
-                    borderRadius: '8px',
-                    background: '#1261c9',
+                    borderRadius: '10px',
+                    background: '#092b63',
                     color: '#ffffff',
                     fontWeight: 700,
                     fontSize: '13px',
@@ -255,9 +256,10 @@ export const StudentMaterials: React.FC = () => {
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: '6px',
+                    boxShadow: '0 2px 6px rgba(9,43,99,0.2)',
                   }}
                 >
-                  <span>📖</span> Read Online
+                  <span>👁️</span> Preview PDF
                 </button>
                 {mat.downloadUrl ? (
                   <a
@@ -267,10 +269,10 @@ export const StudentMaterials: React.FC = () => {
                     download={mat.fileName || `${mat.title}.pdf`}
                     style={{
                       padding: '10px 14px',
-                      borderRadius: '8px',
-                      border: '1px solid #16a34a',
-                      background: '#f0fdf4',
-                      color: '#15803d',
+                      borderRadius: '10px',
+                      border: '1.5px solid #ffb703',
+                      background: '#fffbeb',
+                      color: '#92400e',
                       fontWeight: 700,
                       fontSize: '13px',
                       textDecoration: 'none',
@@ -278,24 +280,36 @@ export const StudentMaterials: React.FC = () => {
                       alignItems: 'center',
                       gap: '4px',
                     }}
-                    title="Download original PDF from Firebase Storage"
+                    title="Download original PDF"
                   >
                     📥 Download
                   </a>
                 ) : (
                   <button
-                    onClick={() => setSelectedMaterial(mat)}
+                    onClick={() => {
+                      const textContent = `PARTH ACADEMY - STUDY MATERIAL\n\nTitle: ${mat.title}\nSubject: ${mat.subject}\nClass: ${mat.grade}\nCategory: ${mat.category}\n\nDescription:\n${mat.description}\n\nFormulas & Notes:\n${mat.contentSnippet || 'Refer to Parth Academy classroom notes.'}\n\nAdmissions Helpline: +91 97846 64518\nLocation: Near Priya School, Baran Road, Antah, Rajasthan\n© 2026 Parth Academy. All rights reserved. Designed by Garvit Sharma.`;
+                      const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `${mat.title.replace(/\s+/g, '_')}_ParthAcademy.pdf`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                    }}
                     style={{
                       padding: '10px 14px',
-                      borderRadius: '8px',
+                      borderRadius: '10px',
                       border: '1px solid #cbd5e1',
                       background: '#ffffff',
                       color: '#334155',
-                      fontWeight: 600,
+                      fontWeight: 700,
                       fontSize: '13px',
                       cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
                     }}
-                    title="Download document"
+                    title="Download note file"
                   >
                     📥 Download
                   </button>
@@ -307,7 +321,7 @@ export const StudentMaterials: React.FC = () => {
       )}
 
       {selectedMaterial && (
-        <MaterialViewerModal
+        <InAppPdfViewerModal
           material={selectedMaterial}
           onClose={() => setSelectedMaterial(null)}
         />
